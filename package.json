@@ -1,7 +1,7 @@
 {
-    "name": "gpttoolbox",
-    "displayName": "GPT Toolbox",
-    "description": "Use Chat GPT to automate coding work",
+    "name": "gptvscode",
+    "displayName": "GPT VSCode",
+    "description": "Use Chat GPT in VSCode",
     "version": "0.0.1",
     "publisher": "cedricguillemet",
     "icon": "Images/icon.jpg",
@@ -23,47 +23,42 @@
     "contributes": {
         "commands": [
             {
-                "command": "extension.gpttoolbox",
-                "title": "GPT Toolbox - Document code"
+                "command": "gptvscode.add",
+                "title": "GPT - Add to above"
             }
         ],
         "menus": {
 			"editor/context": [
 				{
-					"command": "extension.gpttoolbox",
+					"command": "gptvscode.add",
 					"when": "editorHasSelection",
 					"group": "navigation@1.31",
-                    "title": "GPT Toolbox - Document code"
+                    "title": "GPT - Add to above"
 				}
 			]
 		},
         "configuration": {
             "type": "object",
-            "title": "GPT Toolbox",
+            "title": "GPT VSCode",
             "properties": {
-              "gpttoolbox.apiKey": {
+              "gptvscode.apiKey": {
                 "type": "string",
                 "default": "",
                 "description": "ChatGPT API key to use with the extension (https://beta.openai.com/account/api-keys)"
               },
-              "gpttoolbox.context": {
-                "type": "string",
-                "default": "",
-                "description": "Selected function context. Like type of the project, library,... hint to help ChatGPT improve the quality of the comment."
-              },
-              "gpttoolbox.hostname": {
+              "gptvscode.hostname": {
                 "type": "string",
                 "default": "api.openai.com",
                 "description": "The host used to send queries to. BEWARE: The selected code will be sent to that host. Make sure you are allowed to do so with your private code."
               },
-              "gpttoolbox.port": {
+              "gptvscode.port": {
                 "type": "string",
                 "default": "443",
                 "description": "The host port."
               },
-              "gpttoolbox.path": {
+              "gptvscode.path": {
                 "type": "string",
-                "default": "/v1/completions",
+                "default": "/v1/chat/completions",
                 "description": "The host path."
               }
             }

@@ -12,7 +12,7 @@ async function runOpenAIQuery(prompt: string, code: string, apiKey: any) {
 
 	hostname = hostname ? hostname: 'api.openai.com';
 	port = port ? port : 443;
-	path = path ? path :'/v1/completions';
+	path = path ? path :'/v1/chat/completions';
 
 	const options = {
 		hostname: hostname,
@@ -39,12 +39,19 @@ async function runOpenAIQuery(prompt: string, code: string, apiKey: any) {
 		console.error(error);
 	});
 
+	const messages = [{
+		role: 'system',
+		content: prompt
+	}, {
+		role: 'user',
+		content: code
+	}
+	];
+
 	req.write(JSON.stringify({
-		model: 'text-davinci-003',
-		prompt: prompt + code,
-		max_tokens: 2048,
-		temperature: 0.0,
-		top_p: 0.1
+		model: 'gpt-4o',
+		messages: messages,
+		response_format: { "type": "json_object" }
 	}));
 	req.end();
 
@@ -59,17 +66,10 @@ async function runOpenAIQuery(prompt: string, code: string, apiKey: any) {
 
 export function activate(context: vscode.ExtensionContext) {
 	const api_key = vscode.workspace.getConfiguration().get('gpttoolbox.apiKey');
-	const code_context = vscode.workspace.getConfiguration().get('gpttoolbox.context');
-	const disposable = vscode.commands.registerCommand('extension.gpttoolbox', async function() {
+	const disposable_add = vscode.commands.registerCommand('gptvscode.add', async function() {
 
 		if (!api_key) {
 			throw new Error('API key is required and cannot be empty');
-		}
-
-		let context_infos = "";
-		if (code_context)
-		{
-			context_infos = "The code is about "+code_context+".";
 		}
 
 		// Get the active text editor
@@ -78,7 +78,7 @@ export function activate(context: vscode.ExtensionContext) {
 		if (editor) {
 			window.withProgress({
 				location: ProgressLocation.Notification,
-				title: "Generating documentation",
+				title: "Calling the LLM",
 				cancellable: false
 			}, (progress, token) => {
 
@@ -96,7 +96,23 @@ export function activate(context: vscode.ExtensionContext) {
 				//It's in the context of a physics engine in babylon.js. 
 				const p = new Promise<void>(resolve => {
 					runOpenAIQuery(
-						`Generate documentation comment following TSDoc specification with input parameters and return value for the following code. Also add detailed explanation in the comment on why this code is useful. ${context_infos} Format the generated comment with 80 columns view:\n`
+						`You are going to review a segment of academic writing focusing on computer science and mathematics. The segment is written in LaTeX. The segment may be part of a longer passage where some notations or terms have been defined. You do not need to worry about background knowledge or definitions, as they are likely provided in context. Check for any grammatical, clarity, or structural issues that need improvement within the segment.
+
+- If the work is well-written and contains no major issues, provide brief feedback indicating this in JSON format.
+
+- If issues arise, suggest changes or enhancements to improve coherence and readability while keeping your revisions brief. Provide your feedback and the suggested changes in JSON format. Highlight the changes you made.
+
+Output should be structured as follows:
+{
+    "well_written": boolean,
+    "revision": string,
+    "suggestions": [
+        {
+            "original_text": "string",
+            "suggested_text": "string"
+        }
+    ]
+}`
 						, code
 						, api_key).then((res: any)=> {
 							if (res['error']) {
@@ -104,7 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
 								resolve();
 								return;
 							}
-							const comment = res["choices"][0]["text"];
+							const comment = res['choices'][0]['message']['content'];
 							editor.edit(editBuilder => {
 
 								progress.report({ message: "Done!", increment: 90 });
@@ -120,5 +136,5 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(disposable_add);
 }

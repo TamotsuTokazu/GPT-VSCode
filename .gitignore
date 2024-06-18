@@ -1,0 +1,19 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore built output
+out/
+
+# Ignore TypeScript build artifacts
+*.js
+*.js.map
+
+# Ignore VSCode specific files
+.vscode/
+.vscode-test/
+
+# Ignore npm debug logs
+npm-debug.log*
+
+# Ignore VSCode extension file
+*.vsix
